@@ -51,25 +51,43 @@
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycby8KsVX4Pt_gWax_9bwdnpclQUAUNlp5HPAlHTBZJD3rlXX5Tb0FfgTre4IlBug6h-H/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzrQ9Hp6ZHJaVoX9ENxnczTeU96ZQbBAhUnFYOUx61owLlaLe_6xD5dfV4wAmVsYmhG/exec"; // ✅ put your Apps Script URL
 
 const actions = ["Time-In", "Break-Out", "Break-In", "Time-Out"];
 let logs = {};
-
-function startScanner() {
-  const scanner = new Html5Qrcode("reader");
-
-  scanner.start(
-    { facingMode: "environment" },
-    { fps: 20, qrbox: 250 },
-    onScan
-  ).catch(err => {
-    alert("Camera failed. Allow permission.");
-  });
-}
+let scanner;
 
 function vibrate() {
   if (navigator.vibrate) navigator.vibrate(200);
+}
+
+// ✅ AUTO START when page loads
+window.onload = function () {
+  startScanner();
+};
+
+function startScanner() {
+  scanner = new Html5Qrcode("reader");
+
+  Html5Qrcode.getCameras().then(devices => {
+    if (devices && devices.length) {
+      // ✅ Use back camera
+      const cameraId = devices[devices.length - 1].id;
+
+      scanner.start(
+        cameraId,
+        {
+          fps: 10,
+          qrbox: 250
+        },
+        onScan
+      );
+    } else {
+      alert("❌ No camera found");
+    }
+  }).catch(err => {
+    alert("❌ Camera error: " + err);
+  });
 }
 
 function onScan(decodedText) {
@@ -79,12 +97,12 @@ function onScan(decodedText) {
   if (!logs[key]) logs[key] = [];
 
   if (logs[key].length >= 4) {
-    alert("Already completed all scans");
+    document.getElementById("status").innerText =
+      "✅ Completed: " + decodedText;
     return;
   }
 
   const action = actions[logs[key].length];
-
   logs[key].push(action);
 
   document.getElementById("next").innerText =
@@ -95,6 +113,7 @@ function onScan(decodedText) {
 
   vibrate();
 
+  // ✅ SEND TO GOOGLE SHEETS
   fetch(API_URL, {
     method: "POST",
     body: JSON.stringify({
@@ -102,8 +121,12 @@ function onScan(decodedText) {
       action: action,
       timestamp: new Date().toISOString()
     })
+  })
+  .then(() => {
+    document.getElementById("status").innerText += " ✅ Saved";
+  })
+  .catch(() => {
+    document.getElementById("status").innerText += " ❌ Offline";
   });
 }
 </script>
-</body>
-</html>
