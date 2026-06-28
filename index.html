@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>QR Attendance System</title>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: #f4f4f4;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    #reader {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px;
+      background: blue;
+      color: white;
+      border: none;
+      width: 100%;
+      border-radius: 5px;
+    }
+    #status {
+      margin: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+<div class="container">
+  <h2>📷 QR Attendance</h2>
+
+  <div id="reader"></div>
+
+  <p id="next">Next: Time-In</p>
+  <p id="status">Waiting...</p>
+
+  <button onclick="startScanner()">Start Scanner</button>
+</div>
+
+<script>
+const API_URL = "PUT YOUR APPS SCRIPT URL HERE";
+
+const actions = ["Time-In", "Break-Out", "Break-In", "Time-Out"];
+let logs = {};
+
+function startScanner() {
+  const scanner = new Html5Qrcode("reader");
+
+  scanner.start(
+    { facingMode: "environment" },
+    { fps: 20, qrbox: 250 },
+    onScan
+  ).catch(err => {
+    alert("Camera failed. Allow permission.");
+  });
+}
+
+function vibrate() {
+  if (navigator.vibrate) navigator.vibrate(200);
+}
+
+function onScan(decodedText) {
+  const today = new Date().toISOString().split("T")[0];
+  const key = decodedText + "_" + today;
+
+  if (!logs[key]) logs[key] = [];
+
+  if (logs[key].length >= 4) {
+    alert("Already completed all scans");
+    return;
+  }
+
+  const action = actions[logs[key].length];
+
+  logs[key].push(action);
+
+  document.getElementById("next").innerText =
+    "Next: " + (actions[logs[key].length] || "✅ Done");
+
+  document.getElementById("status").innerText =
+    decodedText + " - " + action;
+
+  vibrate();
+
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      qrData: decodedText,
+      action: action,
+      timestamp: new Date().toISOString()
+    })
+  });
+}
+</script>
+</body>
+</html>
