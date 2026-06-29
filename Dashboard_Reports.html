@@ -312,45 +312,21 @@ tbody tr:hover td{background:#F9FAFB;}
 </div><!-- /shell -->
 https://script.google.com/macros/s/AKfycbwNVEjwyz2ssv8VunDQ7j2gKCrSFo_b84poUhH7ViemcpYy4-2NvbGXnyHGSe1I7Dy7/exec
 <script>
-// ── Demo data (replace fetch() calls with your Apps Script URL in production)
-const SECTIONS = [
-  {s:"7-Rizal",     g:7,  adviser:"Ms. A. Santos",     enrolled:42},
-  {s:"7-Bonifacio", g:7,  adviser:"Mr. R. Reyes",       enrolled:40},
-  {s:"8-Mabini",    g:8,  adviser:"Ms. L. Cruz",        enrolled:38},
-  {s:"8-Luna",      g:8,  adviser:"Mr. J. Dela Cruz",   enrolled:41},
-  {s:"9-Aguinaldo", g:9,  adviser:"Ms. M. Garcia",      enrolled:39},
-  {s:"9-Tandang Sora",g:9,adviser:"Mr. P. Torres",      enrolled:37},
-  {s:"10-Lapu-Lapu",g:10, adviser:"Ms. R. Mendoza",     enrolled:44},
-  {s:"10-Gabriela", g:10, adviser:"Mr. C. Flores",      enrolled:43},
-];
-const TODAY_STATS = {
-  "7-Rizal":       {present:38,late:2,veryLate:1,absent:1,exit:5},
-  "7-Bonifacio":   {present:35,late:3,veryLate:1,absent:1,exit:4},
-  "8-Mabini":      {present:33,late:2,veryLate:1,absent:2,exit:3},
-  "8-Luna":        {present:37,late:1,veryLate:2,absent:1,exit:6},
-  "9-Aguinaldo":   {present:34,late:2,veryLate:1,absent:2,exit:2},
-  "9-Tandang Sora":{present:32,late:3,veryLate:1,absent:1,exit:3},
-  "10-Lapu-Lapu":  {present:40,late:1,veryLate:1,absent:2,exit:7},
-  "10-Gabriela":   {present:39,late:2,veryLate:1,absent:1,exit:5},
-};
-const LOG = [
-  {name:"Juan Dela Cruz",   sec:"10-Lapu-Lapu", mode:"Time-In",  status:"Present",   time:"6:58 AM"},
-  {name:"Maria Santos",     sec:"7-Rizal",      mode:"Time-In",  status:"Present",   time:"7:02 AM"},
-  {name:"Pedro Reyes",      sec:"8-Mabini",     mode:"Time-In",  status:"Late",      time:"7:46 AM"},
-  {name:"Ana Cruz",         sec:"9-Aguinaldo",  mode:"Time-In",  status:"Very Late", time:"8:04 AM"},
-  {name:"Jose Flores",      sec:"7-Bonifacio",  mode:"Time-Out", status:"Campus Exit",time:"11:28 AM"},
-  {name:"Rosa Garcia",      sec:"8-Luna",       mode:"Time-In",  status:"Present",   time:"6:55 AM"},
-  {name:"Carlos Torres",    sec:"10-Lapu-Lapu", mode:"Time-In",  status:"Late",      time:"7:41 AM"},
-  {name:"Liza Mendoza",     sec:"7-Rizal",      mode:"Time-Out", status:"Campus Exit",time:"12:01 PM"},
-  {name:"Grace Lim",        sec:"9-Tandang Sora",mode:"Time-In", status:"Present",   time:"7:05 AM"},
-  {name:"Rico Jimenez",     sec:"10-Gabriela",  mode:"Time-In",  status:"Present",   time:"6:50 AM"},
-];
-const RISK = [
-  {name:"Pedro Reyes",    sec:"8-Mabini",      abs:7, ratio:48},
-  {name:"Ana Cruz",       sec:"9-Aguinaldo",   abs:6, ratio:42},
-  {name:"Carlos Torres",  sec:"10-Lapu-Lapu",  abs:5, ratio:35},
-  {name:"Liza Mendoza",   sec:"7-Rizal",       abs:4, ratio:28},
-  {name:"Tony Bautista",  sec:"8-Luna",        abs:3, ratio:26},
+google.script.run
+  .withSuccessHandler(renderSections)
+  .getSectionsData();
+
+google.script.run
+  .withSuccessHandler(renderLog)
+  .getAttendanceLog();
+
+google.script.run
+  .withSuccessHandler(renderRisk)
+  .getRiskStudents();
+
+google.script.run
+  .withSuccessHandler(updateStats)
+  .getTodayStats();
 ];
 const MONTHS = ["","January","February","March","April","May","June","July","August","September","October","November","December"];
 
