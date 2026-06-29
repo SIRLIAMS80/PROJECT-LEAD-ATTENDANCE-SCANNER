@@ -312,21 +312,13 @@ tbody tr:hover td{background:#F9FAFB;}
 </div><!-- /shell -->
 https://script.google.com/macros/s/AKfycbxzqis3ZUYHrdIWFgQVCqg6M2lDYeNIeFeBoM_ELaWYle3_J2ackqjGykHodjV0wu1v/exec
 <script>
-google.script.run
-  .withSuccessHandler(renderSections)
-  .getSectionsData();
 
-google.script.run
-  .withSuccessHandler(renderLog)
-  .getAttendanceLog();
+fetch("https://script.google.com/macros/s/AKfycbxzqis3ZUYHrdIWFgQVCqg6M2lDYeNIeFeBoM_ELaWYle3_J2ackqjGykHodjV0wu1v/exec")
+.then(r => r.json())
+.then(data => {
+   renderDashboard(data);
+});
 
-google.script.run
-  .withSuccessHandler(renderRisk)
-  .getRiskStudents();
-
-google.script.run
-  .withSuccessHandler(updateStats)
-  .getTodayStats();
 ];
 const MONTHS = ["","January","February","March","April","May","June","July","August","September","October","November","December"];
 
