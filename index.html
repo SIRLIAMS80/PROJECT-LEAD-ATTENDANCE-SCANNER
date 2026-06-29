@@ -1,132 +1,622 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>PROJECT-LEAD-QR-ATTENDANCE-SCANNER </title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project LEAD — QR Scanner</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<style>
+  :root {
+    --maroon: #8B0000;
+    --gold:   #FFD700;
+    --green:  #1a7a1a;
+    --red:    #c0392b;
+    --orange: #e67e22;
+    --blue:   #1565c0;
+    --bg:     #f0f2f5;
+    --card:   #ffffff;
+    --text:   #1a202c;
+    --border: #e2e8f0;
+    --radius: 14px;
+    --shadow: 0 4px 20px rgba(0,0,0,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
 
-  <style>
-    body {
-      font-family: Arial;
-      text-align: center;
-      background: #f4f4f4;
-    }
-    .container {
-      max-width: 500px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-    }
-    #reader {
-      width: 100%;
-      margin-bottom: 10px;
-    }
-    button {
-      padding: 10px;
-      background: blue;
-      color: white;
-      border: none;
-      width: 100%;
-      border-radius: 5px;
-    }
-    #status {
-      margin: 10px;
-      font-weight: bold;
-    }
-  </style>
+  header {
+    background: linear-gradient(135deg, var(--maroon) 0%, #5c0000 100%);
+    color: #fff;
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+  }
+  .logo {
+    width: 46px; height: 46px;
+    background: var(--gold); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  header h1  { font-size: 18px; font-weight: 700; }
+  header p   { font-size: 11px; opacity: .8; }
+
+  #net-bar {
+    text-align: center; padding: 6px; font-size: 13px; font-weight: 600;
+    background: var(--green); color: #fff; letter-spacing: .5px;
+    transition: background .3s;
+  }
+  #net-bar.offline { background: var(--red); }
+
+  /* ── CONFIG NOTICE ── */
+  #config-warn {
+    background: #fff3cd; border: 1px solid #ffc107;
+    color: #664d03; padding: 10px 16px; font-size: 13px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  #config-warn a { color: var(--maroon); font-weight: 700; }
+
+  .container {
+    max-width: 600px; margin: 0 auto; padding: 18px 14px 48px;
+  }
+
+  .card {
+    background: var(--card); border-radius: var(--radius);
+    box-shadow: var(--shadow); border: 1px solid var(--border);
+    overflow: hidden; margin-bottom: 16px;
+  }
+  .card-head {
+    padding: 12px 18px; background: #fdf5f5;
+    border-bottom: 1px solid var(--border);
+    font-weight: 700; font-size: 14px; color: var(--maroon);
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* Mode row */
+  .mode-row {
+    padding: 12px 18px 4px;
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  }
+  .mode-label { font-size: 12px; color: #666; font-weight: 600; }
+  .mode-btn {
+    padding: 6px 14px; border-radius: 20px;
+    border: 2px solid transparent; font-size: 12px;
+    font-weight: 700; cursor: pointer; transition: all .2s;
+  }
+  .m-in   { background: #e8f5e9; color: var(--green);  border-color: var(--green); }
+  .m-out  { background: #fff3e0; color: var(--orange); border-color: var(--orange); }
+  .m-auto { background: #e3f2fd; color: var(--blue);   border-color: var(--blue); }
+  .m-off  { background: #f0f0f0; color: #999; }
+
+  /* Viewfinder */
+  #viewer-wrap {
+    background: #111; min-height: 260px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  #qr-reader { width: 100% !important; }
+  #qr-reader video { display: block; }
+  #qr-reader__scan_region { border-radius: 0 !important; }
+
+  /* Remove extra UI from html5-qrcode */
+  #qr-reader__dashboard_section_csr button { display: none !important; }
+  #qr-reader__status_span { color: #aaa; font-size: 12px; }
+
+  .placeholder {
+    text-align: center; color: #666; padding: 40px 20px;
+  }
+  .placeholder .ph-icon { font-size: 56px; margin-bottom: 10px; }
+  .placeholder p { font-size: 13px; line-height: 1.5; }
+
+  /* Scanning overlay corners */
+  #corner-overlay {
+    position: absolute; inset: 0; pointer-events: none;
+    display: none; align-items: center; justify-content: center;
+  }
+  #corner-overlay.show { display: flex; }
+  .corner-box {
+    width: 200px; height: 200px; position: relative;
+  }
+  .corner-box::before, .corner-box::after,
+  .corner-box span::before, .corner-box span::after {
+    content: ''; position: absolute;
+    width: 28px; height: 28px;
+    border-color: var(--gold); border-style: solid;
+  }
+  .corner-box::before { top: 0; left: 0; border-width: 3px 0 0 3px; }
+  .corner-box::after  { top: 0; right: 0; border-width: 3px 3px 0 0; }
+  .corner-box span::before { bottom: 0; left: 0; border-width: 0 0 3px 3px; }
+  .corner-box span::after  { bottom: 0; right: 0; border-width: 0 3px 3px 0; }
+
+  /* Scan line animation */
+  @keyframes scanLine {
+    0%   { top: 20px; }
+    50%  { top: calc(100% - 20px); }
+    100% { top: 20px; }
+  }
+  .scan-line {
+    position: absolute; left: 10%; right: 10%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    animation: scanLine 2s ease-in-out infinite;
+    top: 50%;
+  }
+
+  /* Buttons */
+  .btn-row { padding: 14px 18px; display: flex; gap: 10px; }
+  .btn {
+    padding: 11px 20px; border: none; border-radius: 9px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    transition: all .2s; display: flex; align-items: center; gap: 6px;
+  }
+  .btn-start { background: var(--maroon); color: #fff; flex: 1; justify-content: center; }
+  .btn-start:hover:not(:disabled) { background: #6a0000; transform: translateY(-1px); }
+  .btn-stop  { background: #e2e8f0; color: #555; }
+  .btn-stop:hover  { background: #cbd5e1; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; transform: none !important; }
+
+  /* Manual */
+  .manual-row { padding: 0 18px 14px; display: flex; gap: 8px; }
+  .manual-row input {
+    flex: 1; padding: 10px 13px; border: 1.5px solid var(--border);
+    border-radius: 8px; font-size: 13px; outline: none; transition: border .2s;
+  }
+  .manual-row input:focus { border-color: var(--maroon); }
+  .btn-manual { background: #e2e8f0; color: #444; padding: 10px 16px; font-size: 13px; font-weight: 600; }
+
+  /* Result */
+  #result-card { display: none; }
+  .res-inner { padding: 18px; }
+  .res-top {
+    display: flex; gap: 12px; align-items: center; margin-bottom: 14px;
+  }
+  .res-icon { font-size: 46px; }
+  .res-name { font-size: 20px; font-weight: 800; }
+  .res-sub  { font-size: 12px; color: #666; margin-top: 3px; }
+
+  .res-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;
+  }
+  .res-item { background: var(--bg); border-radius: 8px; padding: 10px 13px; }
+  .res-item .lbl { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: .5px; font-weight: 700; }
+  .res-item .val { font-size: 15px; font-weight: 700; margin-top: 3px; }
+
+  .s-pill {
+    display: inline-block; padding: 3px 11px; border-radius: 20px;
+    font-size: 12px; font-weight: 700;
+  }
+  .sp-present   { background: #e8f5e9; color: #1b5e20; }
+  .sp-late      { background: #fff8e1; color: #e65100; }
+  .sp-very-late { background: #fce4ec; color: #880e4f; }
+  .sp-absent    { background: #ffebee; color: #b71c1c; }
+  .sp-exit      { background: #e3f2fd; color: #0d47a1; }
+
+  .notif-strip {
+    display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px;
+    padding-top: 12px; border-top: 1px solid var(--border);
+  }
+  .n-badge { padding: 3px 9px; border-radius: 5px; font-weight: 700; }
+  .n-ok  { background: #e8f5e9; color: var(--green); }
+  .n-err { background: #ffebee; color: var(--red); }
+  .n-na  { background: #f0f0f0; color: #999; }
+
+  /* Queue */
+  .q-head {
+    padding: 12px 18px; background: #fdf5f5;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .q-title { font-weight: 700; font-size: 14px; color: var(--maroon); display: flex; gap: 8px; align-items: center; }
+  .q-cnt   { background: var(--maroon); color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+  #q-list  { max-height: 200px; overflow-y: auto; }
+  .q-row   { padding: 9px 18px; border-bottom: 1px solid #f0f0f0; display: flex; gap: 10px; font-size: 12px; align-items: center; }
+  .q-row:last-child { border: none; }
+  .q-name  { font-weight: 700; flex: 1; }
+  .q-mode  { color: var(--green); font-weight: 700; }
+  .q-time  { color: #999; }
+  .q-pend  { color: var(--orange); font-weight: 700; font-size: 11px; }
+  .q-empty { padding: 22px; text-align: center; color: #aaa; font-size: 13px; }
+
+  .btn-sync {
+    padding: 6px 12px; border-radius: 7px; border: none;
+    background: #e2e8f0; color: #444; font-size: 12px; font-weight: 700; cursor: pointer;
+  }
+  .btn-sync:hover { background: #cbd5e1; }
+
+  /* Flash */
+  @keyframes flashGreen { 0%,100%{background:var(--bg)} 50%{background:#c8e6c9} }
+  body.flash { animation: flashGreen .35s ease; }
+</style>
 </head>
-
 <body>
+
+<header>
+  <div class="logo">🎓</div>
+  <div>
+    <h1>Project LEAD — QR Scanner</h1>
+    <p>Jaliobong National High School Attendance System</p>
+  </div>
+</header>
+
+<div id="net-bar">✅ Online — Ready to Scan</div>
+
+<!-- Config warning shown if script URL not set -->
+<div id="config-warn" style="display:none">
+  ⚠️ <strong>Apps Script URL not configured.</strong>
+  Open this file and set <code>APPS_SCRIPT_URL</code> at the top of the &lt;script&gt; section.
+</div>
+
 <div class="container">
-  <h2>📷 PROJECT-LEAD-QR-ATTENDANCE-SCANNER</h2>
 
-  <div id="reader"></div>
+  <!-- Scanner -->
+  <div class="card">
+    <div class="card-head">📷 QR Code Camera Scanner</div>
 
-  <p id="next">Next: Time-In</p>
-  <p id="status">Waiting...</p>
+    <div class="mode-row">
+      <span class="mode-label">Mode:</span>
+      <button class="mode-btn m-auto" id="mb-auto" onclick="setMode('auto')">🔄 Auto</button>
+      <button class="mode-btn m-off"  id="mb-in"   onclick="setMode('Time-In')">⬆ Time-In</button>
+      <button class="mode-btn m-off"  id="mb-out"  onclick="setMode('Time-Out')">⬇ Time-Out</button>
+    </div>
 
-  <button onclick="startScanner()">Start Scanner</button>
+    <div id="viewer-wrap">
+      <div class="placeholder" id="ph">
+        <div class="ph-icon">📷</div>
+        <p>Tap <strong>Start Scanning</strong><br>to open the camera</p>
+      </div>
+      <div id="qr-reader" style="display:none; width:100%"></div>
+      <div id="corner-overlay"><div class="corner-box"><span></span><div class="scan-line"></div></div></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-start" id="btn-start" onclick="startScanner()">📷 Start Scanning</button>
+      <button class="btn btn-stop"  id="btn-stop"  onclick="stopScanner()" disabled>⏹ Stop</button>
+    </div>
+
+    <div class="manual-row">
+      <input type="text" id="manual-in" placeholder="Or paste / type QR data here…" onkeydown="if(event.key==='Enter') doManual()">
+      <button class="btn btn-manual" onclick="doManual()">Submit</button>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="card" id="result-card">
+    <div class="card-head">✅ Scan Result</div>
+    <div class="res-inner" id="res-inner"></div>
+  </div>
+
+  <!-- Offline queue -->
+  <div class="card">
+    <div class="q-head">
+      <span class="q-title">📦 Offline Queue <span class="q-cnt" id="q-cnt">0</span></span>
+      <button class="btn-sync" onclick="syncQueue()">🔄 Sync Now</button>
+    </div>
+    <div id="q-list"><div class="q-empty">No queued scans — all synced ✅</div></div>
+  </div>
+
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxxrcO0_G7l4mIadbS__3Yej_IbVrTGDmJxEuozLSpff1SY2TsMWHyAfF0yrDaWn_F5/exec"; // ✅ put your Apps Script URL
+// ════════════════════════════════════════════════════════
+//  ⚙️  CONFIGURATION — SET YOUR APPS SCRIPT WEB APP URL
+//  Deploy your Apps Script as a Web App, paste the URL here
+// ════════════════════════════════════════════════════════
+const APPS_SCRIPT_URL = "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+// Example:
+// const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzBxHF413XX0le91FWdh7it0eLzwrU5ed2nVYMcArNz0FkCwEHaghvPyMo4EhbUGj7Q/exec";
+// ════════════════════════════════════════════════════════
 
-const actions = ["Time-In", "Break-Out", "Break-In", "Time-Out"];
-let logs = {};
-let scanner;
+// ── State
+let scanner     = null;
+let scanning    = false;
+let mode        = "auto";         // "auto" | "Time-In" | "Time-Out"
+let lastQR      = "";
+let lastScanMs  = 0;
+let queue       = JSON.parse(localStorage.getItem("leadQ") || "[]");
 
-function vibrate() {
-  if (navigator.vibrate) navigator.vibrate(200);
+// ── Config check
+if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("YOUR_")) {
+  document.getElementById("config-warn").style.display = "flex";
 }
 
-// ✅ AUTO START when page loads
-window.onload = function () {
-  startScanner();
-};
+// ── Mode
+function setMode(m) {
+  mode = m;
+  document.getElementById("mb-auto").className = "mode-btn " + (m === "auto"     ? "m-auto" : "m-off");
+  document.getElementById("mb-in").className   = "mode-btn " + (m === "Time-In"  ? "m-in"   : "m-off");
+  document.getElementById("mb-out").className  = "mode-btn " + (m === "Time-Out" ? "m-out"  : "m-off");
+}
 
+// ── Scanner
 function startScanner() {
-  scanner = new Html5Qrcode("reader");
-
-  Html5Qrcode.getCameras().then(devices => {
-    if (devices && devices.length) {
-      // ✅ Use back camera
-      const cameraId = devices[devices.length - 1].id;
-
-      scanner.start(
-        cameraId,
-        {
-          fps: 10,
-          qrbox: 250
-        },
-        onScan
-      );
-    } else {
-      alert("❌ No camera found");
-    }
-  }).catch(err => {
-    alert("❌ Camera error: " + err);
-  });
-}
-
-function onScan(decodedText) {
-  const today = new Date().toISOString().split("T")[0];
-  const key = decodedText + "_" + today;
-
-  if (!logs[key]) logs[key] = [];
-
-  if (logs[key].length >= 4) {
-    document.getElementById("status").innerText =
-      "✅ Completed: " + decodedText;
+  // Camera permission check
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert("❌ Camera API not available.\n\nMake sure you are accessing this page over HTTPS (not HTTP).");
     return;
   }
 
-  const action = actions[logs[key].length];
-  logs[key].push(action);
+  document.getElementById("ph").style.display        = "none";
+  document.getElementById("qr-reader").style.display = "block";
+  document.getElementById("corner-overlay").classList.add("show");
+  document.getElementById("btn-start").disabled = true;
+  document.getElementById("btn-stop").disabled  = false;
 
-  document.getElementById("next").innerText =
-    "Next: " + (actions[logs[key].length] || "✅ Done");
+  scanner = new Html5Qrcode("qr-reader");
+  scanner.start(
+    { facingMode: "environment" },          // rear camera
+    { fps: 10, qrbox: { width: 220, height: 220 } },
+    onScan,
+    () => {}
+  ).catch(err => {
+    let msg = "Camera error: " + err;
+    if (err.toString().includes("NotAllowedError") || err.toString().includes("Permission")) {
+      msg = "❌ Camera permission denied.\n\nPlease allow camera access:\n• Chrome: click the camera icon in the address bar\n• Safari: Settings → Safari → Camera → Allow";
+    } else if (err.toString().includes("NotFoundError")) {
+      msg = "❌ No camera found on this device.";
+    } else if (err.toString().includes("NotReadableError")) {
+      msg = "❌ Camera is in use by another app. Close other apps and try again.";
+    }
+    alert(msg);
+    resetUI();
+  });
+  scanning = true;
+}
 
-  document.getElementById("status").innerText =
-    decodedText + " - " + action;
+function stopScanner() {
+  if (scanner && scanning) {
+    scanner.stop().then(() => { scanner.clear(); }).catch(() => {});
+    scanning = false;
+  }
+  resetUI();
+}
 
-  vibrate();
+function resetUI() {
+  document.getElementById("ph").style.display        = "block";
+  document.getElementById("qr-reader").style.display = "none";
+  document.getElementById("corner-overlay").classList.remove("show");
+  document.getElementById("btn-start").disabled = false;
+  document.getElementById("btn-stop").disabled  = true;
+}
 
-  // ✅ SEND TO GOOGLE SHEETS
-  fetch(API_URL, {
+// ── On successful scan
+function onScan(qrData) {
+  const now = Date.now();
+  if (qrData === lastQR && now - lastScanMs < 3000) return;  // debounce 3s
+  lastQR     = qrData;
+  lastScanMs = now;
+
+  // Beep
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = "sine"; osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+    osc.start(); osc.stop(ctx.currentTime + 0.2);
+  } catch(e) {}
+
+  // Flash
+  document.body.classList.add("flash");
+  setTimeout(() => document.body.classList.remove("flash"), 350);
+
+  submitScan(qrData);
+}
+
+// ── Manual entry
+function doManual() {
+  const v = document.getElementById("manual-in").value.trim();
+  if (!v) { alert("Please enter QR data."); return; }
+  submitScan(v);
+  document.getElementById("manual-in").value = "";
+}
+
+// ── Submit to Apps Script
+function submitScan(qrData) {
+  const payload = {
+    qrData:    qrData,
+    action:    mode === "auto" ? null : mode,
+    timestamp: new Date().toISOString()
+  };
+
+  showLoading();
+
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("YOUR_")) {
+    showError("Apps Script URL not configured. Edit the HTML file and set APPS_SCRIPT_URL.");
+    return;
+  }
+
+  // Apps Script Web Apps only support GET with callback (JSONP) or POST
+  // We use no-cors POST + store result, OR use a proxy approach.
+  // Best practice: use fetch with mode: "no-cors" is blind,
+  // so we use the URL with a ?method=doPost workaround via GET with parameters.
+  // 
+  // For Apps Script, the cleanest way from external pages is:
+  // POST to the exec URL — Apps Script handles CORS if deployed correctly.
+
+  fetch(APPS_SCRIPT_URL, {
     method: "POST",
-    body: JSON.stringify({
-      qrData: decodedText,
-      action: action,
-      timestamp: new Date().toISOString()
-    })
+    headers: { "Content-Type": "text/plain" },   // avoid CORS preflight
+    body: JSON.stringify(payload),
+    redirect: "follow"
   })
-  .then(() => {
-    document.getElementById("status").innerText += " ✅ Saved";
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === "success" && data.data) {
+      showResult(data.data);
+    } else {
+      // Fallback: queue offline
+      addToQueue(payload);
+      showError((data.message || "Server returned an error.") + " — saved to offline queue.");
+    }
+    checkNet(true);
   })
-  .catch(() => {
-    document.getElementById("status").innerText += " ❌ Offline";
+  .catch(err => {
+    // Network failure — queue offline
+    addToQueue(payload);
+    showError("No connection — scan saved to offline queue.");
+    checkNet(false);
+    console.error(err);
   });
 }
+
+// ── Result display
+function showLoading() {
+  const card = document.getElementById("result-card");
+  card.style.display = "block";
+  document.getElementById("res-inner").innerHTML = `
+    <div style="text-align:center;padding:28px;color:#888">
+      <div style="font-size:36px;margin-bottom:8px">⏳</div>
+      <p style="font-weight:600">Processing scan…</p>
+    </div>`;
+}
+
+function showResult(r) {
+  document.getElementById("result-card").style.display = "block";
+
+  if (!r || !r.success) {
+    showError(r ? r.message : "Unknown error");
+    return;
+  }
+
+  const pillMap = {
+    "Present":     "sp-present",
+    "Late":        "sp-late",
+    "Very Late":   "sp-very-late",
+    "Absent":      "sp-absent",
+    "Campus Exit": "sp-exit"
+  };
+  const pill = pillMap[r.status] || "sp-present";
+  const modeIcon = r.mode === "Time-In" ? "⬆️" : "⬇️";
+
+  const smsClass  = r.sms && r.sms.includes("DELIVERED") ? "n-ok"  : r.sms === "NOT_ATTEMPTED" ? "n-na" : "n-err";
+  const msgrClass = r.messenger && r.messenger.includes("DELIVERED") ? "n-ok" : r.messenger === "NOT_ATTEMPTED" ? "n-na" : "n-err";
+
+  document.getElementById("res-inner").innerHTML = `
+    <div class="res-top">
+      <div class="res-icon">${r.mode === "Time-In" ? "✅" : "👋"}</div>
+      <div>
+        <div class="res-name">${r.fullName || "Unknown Student"}</div>
+        <div class="res-sub">${r.grade ? "Grade " + r.grade + " — " : ""}${r.section || ""}</div>
+      </div>
+    </div>
+    <div class="res-grid">
+      <div class="res-item">
+        <div class="lbl">Mode</div>
+        <div class="val">${modeIcon} ${r.mode}</div>
+      </div>
+      <div class="res-item">
+        <div class="lbl">Status</div>
+        <div class="val"><span class="s-pill ${pill}">${r.status}</span></div>
+      </div>
+      <div class="res-item">
+        <div class="lbl">Time</div>
+        <div class="val">${r.time}</div>
+      </div>
+      <div class="res-item">
+        <div class="lbl">Date</div>
+        <div class="val" style="font-size:13px">${r.date}</div>
+      </div>
+    </div>
+    <div class="notif-strip">
+      <span style="color:#666">Notifications:</span>
+      <span class="n-badge ${smsClass}">📱 SMS: ${fmtN(r.sms)}</span>
+      <span class="n-badge ${msgrClass}">💬 Messenger: ${fmtN(r.messenger)}</span>
+    </div>`;
+}
+
+function showError(msg) {
+  document.getElementById("result-card").style.display = "block";
+  document.getElementById("res-inner").innerHTML = `
+    <div style="text-align:center;padding:22px;color:#c62828">
+      <div style="font-size:40px;margin-bottom:8px">❌</div>
+      <p style="font-weight:700">${msg}</p>
+    </div>`;
+}
+
+function fmtN(s) {
+  if (!s || s === "NOT_ATTEMPTED") return "N/A";
+  if (s.includes("DELIVERED")) return "Sent ✅";
+  return "Failed ❌";
+}
+
+// ── Offline queue
+function addToQueue(payload) {
+  queue.push({ ...payload, queued: new Date().toISOString() });
+  localStorage.setItem("leadQ", JSON.stringify(queue));
+  renderQueue();
+}
+
+function syncQueue() {
+  if (!queue.length) { alert("Queue is empty — nothing to sync."); return; }
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("YOUR_")) {
+    alert("Set the Apps Script URL first."); return;
+  }
+  const toSync = [...queue];
+  queue = [];
+  localStorage.setItem("leadQ", JSON.stringify(queue));
+  renderQueue();
+
+  let done = 0, failed = 0;
+  toSync.forEach(item => {
+    fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(item),
+      redirect: "follow"
+    })
+    .then(() => {
+      done++;
+      if (done + failed === toSync.length) alert(`✅ Synced ${done} record(s). ${failed ? failed + " failed." : ""}`);
+    })
+    .catch(() => {
+      failed++;
+      queue.push(item);
+      localStorage.setItem("leadQ", JSON.stringify(queue));
+      renderQueue();
+      if (done + failed === toSync.length) alert(`✅ Synced ${done} record(s). ${failed} failed and re-queued.`);
+    });
+  });
+}
+
+function renderQueue() {
+  document.getElementById("q-cnt").textContent = queue.length;
+  const el = document.getElementById("q-list");
+  if (!queue.length) {
+    el.innerHTML = '<div class="q-empty">No queued scans — all synced ✅</div>';
+    return;
+  }
+  el.innerHTML = queue.map(q => `
+    <div class="q-row">
+      <span class="q-name">${q.qrData}</span>
+      <span class="q-mode">${q.action || "Auto"}</span>
+      <span class="q-time">${new Date(q.queued).toLocaleTimeString()}</span>
+      <span class="q-pend">PENDING</span>
+    </div>`).join("");
+}
+
+// ── Network status
+function checkNet(online) {
+  const bar = document.getElementById("net-bar");
+  if (online) {
+    bar.textContent = "✅ Online — Ready to Scan";
+    bar.className   = ""; 
+  } else {
+    bar.textContent = "🔴 Offline — Scans saved to queue";
+    bar.className   = "offline";
+  }
+}
+
+window.addEventListener("online",  () => checkNet(true));
+window.addEventListener("offline", () => checkNet(false));
+
+// ── Init
+setMode("auto");
+renderQueue();
 </script>
+</body>
+</html>
