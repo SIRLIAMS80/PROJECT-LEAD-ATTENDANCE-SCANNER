@@ -485,7 +485,7 @@ td.mono{font-family:var(--mono);}
 // CONFIG
 // ════════════════════════════════════
 const CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbz5ieWc9pWS-3zMonw4dCutLO7qgkuMrNBDo2n_LWSSUc_f1c1UM2f4DgkY0_rB0n1P/exec",
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxLvkomQLVYwTgygtczrWq2CmYPJHTa0zOeOdVa-02LAyUvNIE-R8HSThAytWFT-kzY/exec",
   AUTO_REFRESH_MS: 30000
 };
 
@@ -1020,6 +1020,18 @@ function buildSF2(sec, mo, yr) {
 function printSF2() {
   if (document.getElementById("sf2-preview").classList.contains("loading")) { alert("Generate SF2 first."); return; }
   window.print();
+}function openDashboard() {
+  const url =
+    "https://sirliams80.github.io/PROJECT-LEAD-ATTENDANCE-SCANNER/Dashboard_Reports.html";
+
+  const html = HtmlService.createHtmlOutput(
+    `<script>
+       window.open('${url}', '_blank');
+       google.script.host.close();
+     </script>`
+  );
+
+  SpreadsheetApp.getUi().showModalDialog(html, "Opening Dashboard");
 }
 
 // ════════════════════════════════════
