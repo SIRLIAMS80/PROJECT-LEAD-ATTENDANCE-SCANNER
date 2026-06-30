@@ -298,15 +298,15 @@
   </div>
 
 </div>
-https://script.google.com/macros/s/AKfycbypXvkWMn-RHGgO9HBS3630BP9qNnjndm3mbfK28JgKZAz_UmvRH42Q2NoWQX25ruhY/exec
+https://script.google.com/macros/s/AKfycbzVHxKDceo7_Ad9ydyaThcJp3_0MNPGELHw9BtuQIhYg3N0ODZHB2faA6cHHEf1Z7UX/exec
 <script>
 // ════════════════════════════════════════════════════════
 //  ⚙️  CONFIGURATION — SET YOUR APPS SCRIPT WEB APP URL
 //  Deploy your Apps Script as a Web App, paste the URL here
 // ════════════════════════════════════════════════════════
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbypXvkWMn-RHGgO9HBS3630BP9qNnjndm3mbfK28JgKZAz_UmvRH42Q2NoWQX25ruhY/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzVHxKDceo7_Ad9ydyaThcJp3_0MNPGELHw9BtuQIhYg3N0ODZHB2faA6cHHEf1Z7UX/exec";
 // Example:
-// const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbypXvkWMn-RHGgO9HBS3630BP9qNnjndm3mbfK28JgKZAz_UmvRH42Q2NoWQX25ruhY/exec";
+// const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzVHxKDceo7_Ad9ydyaThcJp3_0MNPGELHw9BtuQIhYg3N0ODZHB2faA6cHHEf1Z7UX/exec";
 // ════════════════════════════════════════════════════════
 
 // ── State
@@ -318,7 +318,7 @@ let lastScanMs  = 0;
 let queue       = JSON.parse(localStorage.getItem("leadQ") || "[]");
 
 // ── Config check
-if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("https://script.google.com/macros/s/AKfycbypXvkWMn-RHGgO9HBS3630BP9qNnjndm3mbfK28JgKZAz_UmvRH42Q2NoWQX25ruhY/exec")) {
+if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("https://script.google.com/macros/s/AKfycbypXvkWMn-RHGgO9HBS3630BP9qNnjndm3mbfK28JgKZAz_UmvRH42Q2NoWQX25ruhY/exec"{
   document.getElementById("config-warn").style.display = "flex";
 }
 
@@ -425,7 +425,7 @@ function submitScan(qrData) {
 
   showLoading();
 
-  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("YOUR_")) {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("https://script.google.com/macros/s/AKfycbzVHxKDceo7_Ad9ydyaThcJp3_0MNPGELHw9BtuQIhYg3N0ODZHB2faA6cHHEf1Z7UX/exec")) {
     showError("Apps Script URL not configured. Edit the HTML file and set APPS_SCRIPT_URL.");
     return;
   }
