@@ -317,10 +317,12 @@ let lastQR      = "";
 let lastScanMs  = 0;
 let queue       = JSON.parse(localStorage.getItem("leadQ") || "[]");
 
-// ── Config check
-if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("https://script.google.com/macros/s/AKfycbypXvkWMn-RHGgO9HBS3630BP9qNnjndm3mbfK28JgKZAz_UmvRH42Q2NoWQX25ruhY/exec"{
+
+// Config check
+if (!APPS_SCRIPT_URL) {
   document.getElementById("config-warn").style.display = "flex";
 }
+
 
 // ── Mode
 function setMode(m) {
