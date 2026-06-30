@@ -527,7 +527,7 @@ body.flash { animation: flashGreen .4s ease; }
 // ⚙️ CONFIGURATION
 // ════════════════════════════════════════
 const CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbz5ieWc9pWS-3zMonw4dCutLO7qgkuMrNBDo2n_LWSSUc_f1c1UM2f4DgkY0_rB0n1P/exec",
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxLvkomQLVYwTgygtczrWq2CmYPJHTa0zOeOdVa-02LAyUvNIE-R8HSThAytWFT-kzY/exec",
   SCHOOL_LAT:   8.4542,   // Jaliobong NHS coordinates
   SCHOOL_LNG:  124.6319,
   SCHOOL_RADIUS: 150,     // meters
@@ -1012,7 +1012,7 @@ async function finalizeScan(faceResult, faceOk) {
   updatePeriodSlots(ctx.studentId);
 
   // Send to Apps Script
-  if (!CONFIG.APPS_SCRIPT_URL.includes("YOUR_")) {
+  if (!CONFIG.APPS_SCRIPT_URL.includes("https://script.google.com/macros/s/AKfycbxLvkomQLVYwTgygtczrWq2CmYPJHTa0zOeOdVa-02LAyUvNIE-R8HSThAytWFT-kzY/exec")) {
     submitToServer(payload);
   } else {
     // Demo mode
