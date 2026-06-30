@@ -390,7 +390,9 @@ td.mono{font-family:var(--mono);}
   </div>
 
   <div class="content">
-
+function loadAll() {
+    console.log("Loading all records...");
+}
     <!-- Role / View Switcher -->
     <div class="role-bar" id="role-bar">
       <label>VIEW AS:</label>
@@ -585,15 +587,44 @@ async function getDashboardData() {
   );
 
   return await response.json();
-}
+async function getDashboardData() {
+  try {
+    const response = await fetch(
+      `${CONFIG.APPS_SCRIPT_URL}?action=dashboard`
+    );
 
-  weeklyTrend: {
-    days: ["Mon","Tue","Wed","Thu","Fri","Mon","Tue"],
-    present: [286,299,271,310,318,305,295],
-    absent:  [38, 25,  53, 14, 6,  19, 29 ],
-    late:    [22, 18,  30, 20, 12, 16, 25 ],
+    const data = await response.json();
+
+    return {
+      totals: data.totals || {},
+      gradeLevel: data.gradeLevel || [],
+      advisers: data.advisers || [],
+      sessionSummary: data.sessionSummary || [],
+      weeklyTrend: data.weeklyTrend || {
+        days: [],
+        present: [],
+        absent: [],
+        late: []
+      }
+    };
+
+  } catch (error) {
+    console.error("Failed to load dashboard data:", error);
+
+    return {
+      totals: {},
+      gradeLevel: [],
+      advisers: [],
+      sessionSummary: [],
+      weeklyTrend: {
+        days: [],
+        present: [],
+        absent: [],
+        late: []
+      }
+    };
   }
-;
+}
 
 // ── State
 let currentRole    = "principal";
@@ -647,7 +678,13 @@ const PAGE_META = {
   excuse:    {t:"📝 Electronic Excuse Slips",s:"Parent-submitted absence justifications"},
 };
 
-function showPage(p) {
+function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(page => {
+        page.style.display = 'none';
+    });
+
+    document.getElementById(pageId).style.display = 'block';
+}
   document.querySelectorAll(".page").forEach(e => e.classList.remove("active"));
   document.querySelectorAll(".nav-item").forEach(e => e.classList.remove("active"));
   document.getElementById("page-"+p).classList.add("active");
