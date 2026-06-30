@@ -545,7 +545,7 @@ const CONFIG = {
 };
 
 // Validate URL
-if (!CONFIG.APPS_SCRIPT_URL || CONFIG.APPS_SCRIPT_URL.includes("YOUR_")) {
+if (!CONFIG.APPS_SCRIPT_URL || CONFIG.APPS_SCRIPT_URL.includes("https://script.google.com/macros/s/AKfycbzw0mOczHegfgifvdcIZr4r-lAZPlBGJQg-hGkVI7JnMmnwom-HRQBVCDgu1DZ_KdDi/exec")) {
   document.getElementById("status-bar").textContent = "⚠ APPS SCRIPT URL NOT CONFIGURED — SET IN CONFIG OBJECT";
   document.getElementById("status-bar").className   = "sb-warn";
 }
