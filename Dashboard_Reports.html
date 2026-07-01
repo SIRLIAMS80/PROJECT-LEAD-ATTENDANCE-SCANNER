@@ -480,14 +480,113 @@ td.mono{font-family:var(--mono);}
 </div>
 </div><!-- /app-shell -->
 
+<!-- 
+=================================================================
+PASTE THIS ENTIRE <script> BLOCK at the top of your <script>
+section in Dashboard_Reports.html, REPLACING your existing
+doLogin() function.
+
+ROOT CAUSE: Your doLogin() was calling fetch(CONFIG.APPS_SCRIPT_URL)
+with NO ?action=login parameter, so the server received an empty
+action and returned "Unknown action: undefined".
+=================================================================
+-->
+
 <script>
-// ════════════════════════════════════
-// CONFIG
-// ════════════════════════════════════
+// ════════════════════════════════════════════════════════
+// CONFIG — paste your NEW Apps Script /exec URL here
+// (must be a NEW deployment, not an existing one)
+// ════════════════════════════════════════════════════════
 const CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxLvkomQLVYwTgygtczrWq2CmYPJHTa0zOeOdVa-02LAyUvNIE-R8HSThAytWFT-kzY/exec",
+  // ⚠️ UPDATE THIS URL every time you create a New Deployment
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbydIluBWIe1S6LCJMpfxiTkid1thWeLWqg_jYw4P9BiEeCL7DdYQslhT3PvzCe2k0Rb/exec",
   AUTO_REFRESH_MS: 30000
 };
+
+// ════════════════════════════════════════════════════════
+// SIMPLE SHA-256 for client-side pre-hashing
+// (avoids sending plaintext password over the network)
+// ════════════════════════════════════════════════════════
+async function hashPassword(str) {
+  const buf  = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("");
+}
+
+// ════════════════════════════════════════════════════════
+// LOGIN — fixed fetch URL with correct ?action=login params
+// ════════════════════════════════════════════════════════
+async function doLogin() {
+  const user    = document.getElementById("login-user").value.trim();
+  const pass    = document.getElementById("login-pass").value;
+  const errEl   = document.getElementById("login-error");
+  const btn     = document.getElementById("login-btn");
+
+  errEl.className = "login-error"; // hide error
+
+  if (!user || !pass) {
+    errEl.textContent = "⚠️ Enter username and password.";
+    errEl.className   = "login-error show";
+    return;
+  }
+
+  btn.disabled    = true;
+  btn.textContent = "Signing in…";
+
+  try {
+    // Pre-hash password client-side so it never travels in plain text
+    const hashed = await hashPassword(pass);
+
+    // ── FIXED: proper URL with action + params ──
+    const url = `${CONFIG.APPS_SCRIPT_URL}?action=login&u=${encodeURIComponent(user)}&pw=${encodeURIComponent(hashed)}`;
+
+    const response = await fetch(url, {
+      method:   "GET",
+      redirect: "follow"
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} — Check Apps Script deployment`);
+    }
+
+    const json = await response.json();
+    const result = json.data || json;
+
+    if (result.success) {
+      // Save session to sessionStorage (cleared when tab closes)
+      session = {
+        role:     result.role     || "adviser",
+        fullName: result.fullName || user,
+        section:  result.section  || ""
+      };
+      sessionStorage.setItem("LEAD_session", JSON.stringify(session));
+      enterApp();
+    } else {
+      errEl.textContent = "❌ " + (result.message || "Login failed.");
+      errEl.className   = "login-error show";
+      btn.disabled      = false;
+      btn.textContent   = "Sign In";
+    }
+
+  } catch(err) {
+    console.error("Login error:", err);
+    errEl.textContent = "❌ Connection error: " + err.message +
+      "\n\nCheck: 1) Apps Script URL is correct  2) Deployed as 'Anyone' access  3) New deployment created after last edit";
+    errEl.className   = "login-error show";
+    btn.disabled      = false;
+    btn.textContent   = "Sign In";
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// UPDATE loginUser() in Code.gs to accept pre-hashed pw
+// The client now sends SHA-256(password) not plain text.
+// Replace the comparison line in loginUser() with:
+//
+//   if (storedHash.toString().trim() === password.toString().trim()) {
+//
+// Because 'password' arriving from the URL is already the hash.
+// ════════════════════════════════════════════════════════
+</script>
 
 const MONTHS = ["","January","February","March","April","May","June","July","August","September","October","November","December"];
 
