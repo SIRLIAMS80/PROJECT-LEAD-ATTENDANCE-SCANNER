@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Project LEAD — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0a0f1e;--navy2:#111827;--navy3:#1a2235;--navy4:#242f45;
+  --teal:#00d4aa;--teal2:#00b894;--teal3:rgba(0,212,170,.12);
+  --amber:#f59e0b;--amber2:rgba(245,158,11,.12);
+  --red:#ef4444;--red2:rgba(239,68,68,.12);
+  --green:#10b981;--green2:rgba(16,185,129,.12);
+  --blue:#3b82f6;--blue2:rgba(59,130,246,.12);
+  --purple:#8b5cf6;--purple2:rgba(139,92,246,.12);
+  --text:#f1f5f9;--muted:#94a3b8;--border:rgba(255,255,255,.07);
+  --card:rgba(255,255,255,.03);--radius:12px;
+  --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--navy);color:var(--text);min-height:100vh;font-size:14px;}
+
+/* LOGIN */
+#login-screen{position:fixed;inset:0;background:var(--navy);z-index:1000;display:flex;align-items:center;justify-content:center;}
+.login-box{width:380px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:18px;padding:36px 30px;backdrop-filter:blur(20px);box-shadow:0 20px 60px rgba(0,0,0,.6);}
+.login-logo{width:58px;height:58px;border-radius:15px;background:linear-gradient(135deg,var(--teal),var(--blue));display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;}
+.login-box h2{text-align:center;font-size:20px;font-weight:900;}
+.login-box .sub{text-align:center;font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:4px;margin-bottom:26px;letter-spacing:.5px;}
+.lf{margin-bottom:14px;}
+.lf label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px;}
+.lf input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;background:var(--navy3);color:var(--text);font-size:13px;outline:none;font-family:var(--sans);transition:border .2s;}
+.lf input:focus{border-color:var(--teal);}
+.login-btn{width:100%;padding:12px;border:none;border-radius:9px;background:linear-gradient(135deg,var(--teal),var(--teal2));color:var(--navy);font-size:14px;font-weight:900;cursor:pointer;margin-top:6px;transition:all .2s;}
+.login-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,212,170,.3);}
+.login-btn:disabled{opacity:.5;cursor:not-allowed;}
+.login-err{background:var(--red2);color:var(--red);border:1px solid rgba(239,68,68,.3);padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:14px;display:none;font-weight:600;line-height:1.4;}
+.login-err.show{display:block;}
+.role-pills{display:flex;gap:6px;justify-content:center;margin-top:18px;}
+.rp{font-size:10px;font-family:var(--mono);color:var(--muted);background:var(--navy3);padding:4px 10px;border-radius:8px;border:1px solid var(--border);}
+
+/* LAYOUT */
+.shell{display:flex;min-height:100vh;}
+.sidebar{width:230px;flex-shrink:0;background:var(--navy2);border-right:1px solid var(--border);position:fixed;top:0;bottom:0;left:0;z-index:100;display:flex;flex-direction:column;overflow-y:auto;}
+.sb-brand{padding:20px 16px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.sb-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--blue));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.sb-name{font-size:14px;font-weight:800;}
+.sb-sub{font-size:9px;color:var(--muted);font-family:var(--mono);margin-top:1px;}
+.sb-user{margin:10px 10px 0;padding:9px 12px;border-radius:8px;background:var(--navy3);border:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.ua{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.ua-p{background:linear-gradient(135deg,#f59e0b,#d97706);}
+.ua-a{background:linear-gradient(135deg,#00d4aa,#0284c7);}
+.ua-v{background:linear-gradient(135deg,#8b5cf6,#6d28d9);}
+.un{font-weight:700;font-size:12px;}
+.ur{color:var(--muted);font-size:9px;font-family:var(--mono);}
+.logout{margin-left:auto;cursor:pointer;color:var(--muted);font-size:15px;padding:2px 4px;}
+.logout:hover{color:var(--red);}
+nav{flex:1;padding:10px 0;}
+.ng{padding:10px 14px 4px;font-size:9px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:1.5px;text-transform:uppercase;}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 15px;color:rgba(255,255,255,.6);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;border-left:3px solid transparent;}
+.ni:hover{background:var(--navy3);color:var(--text);}
+.ni.active{background:var(--teal3);border-left-color:var(--teal);color:var(--teal);font-weight:700;}
+.ni.hidden{display:none;}
+.nbadge{margin-left:auto;background:var(--red);color:#fff;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:700;}
+.sb-bottom{padding:14px 16px;border-top:1px solid var(--border);font-family:var(--mono);}
+.sb-clock{font-size:21px;font-weight:800;color:var(--teal);}
+.sb-date{font-size:10px;color:var(--muted);margin-top:2px;}
+.sb-sync{font-size:9px;color:rgba(255,255,255,.3);margin-top:3px;}
+
+.main{margin-left:230px;flex:1;display:flex;flex-direction:column;min-width:0;}
+.topbar{background:rgba(17,24,39,.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar h2{font-size:19px;font-weight:800;}
+.topbar p{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:2px;}
+.topbar-r{display:flex;gap:10px;align-items:center;}
+
+.btn{padding:8px 15px;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--sans);display:inline-flex;align-items:center;gap:5px;transition:all .18s;}
+.btn-teal{background:var(--teal);color:var(--navy);}
+.btn-teal:hover{background:var(--teal2);box-shadow:0 0 16px rgba(0,212,170,.25);}
+.btn-ghost{background:var(--navy3);color:var(--muted);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);background:var(--navy4);}
+.btn-sm{padding:6px 11px;font-size:11px;}
+
+.content{padding:18px 22px 60px;}
+.page{display:none;}.page.active{display:block;}
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
+.filter-bar select,.filter-bar input{padding:8px 11px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--navy2);color:var(--text);outline:none;font-family:var(--mono);}
+.filter-bar select:focus,.filter-bar input:focus{border-color:var(--teal);}
+.filter-bar select option{background:var(--navy2);}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:11px;margin-bottom:18px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;position:relative;overflow:hidden;}
+.stat::after{content:attr(data-icon);position:absolute;right:12px;top:8px;font-size:28px;opacity:.08;pointer-events:none;}
+.stat .num{font-size:32px;font-weight:900;line-height:1;font-family:var(--mono);}
+.stat .lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-top:4px;}
+.stat .bar{height:3px;border-radius:2px;margin-top:10px;background:var(--border);}
+.stat .bf{height:100%;border-radius:2px;transition:width .5s;}
+.s-total .num{color:var(--blue);}.s-total .bf{background:var(--blue);}
+.s-present .num{color:var(--green);}.s-present .bf{background:var(--green);}
+.s-late .num{color:var(--amber);}.s-late .bf{background:var(--amber);}
+.s-vlate .num{color:var(--purple);}.s-vlate .bf{background:var(--purple);}
+.s-absent .num{color:var(--red);}.s-absent .bf{background:var(--red);}
+.s-rate .num{color:var(--teal);}.s-rate .bf{background:var(--teal);}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+@media(max-width:900px){.grid2{grid-template-columns:1fr;}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:14px;}
+.ch{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:700;font-size:13px;color:var(--teal);font-family:var(--mono);background:rgba(0,212,170,.02);}
+.ctag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:7px;background:var(--teal3);color:var(--teal);}
+.heatmap{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:7px;padding:12px;}
+.hc{border-radius:8px;padding:9px 7px;text-align:center;border:1px solid var(--border);transition:all .2s;cursor:default;}
+.hc:hover{transform:scale(1.04);}
+.hc .hs{font-size:10px;font-weight:700;color:var(--muted);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.hc .hr{font-size:17px;font-weight:900;font-family:var(--mono);}
+.hc .hcnt{font-size:9px;color:var(--muted);font-family:var(--mono);}
+.hh{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);}.hh .hr{color:var(--green);}
+.hm{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.25);}.hm .hr{color:var(--amber);}
+.hl{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.25);}.hl .hr{color:var(--red);}
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th,td{padding:9px 13px;text-align:left;border-bottom:1px solid var(--border);}
+th{background:rgba(255,255,255,.02);font-weight:700;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;font-family:var(--mono);}
+tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:rgba(255,255,255,.02);}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--mono);}
+.cp{background:var(--green2);color:var(--green);}
+.cl{background:var(--amber2);color:var(--amber);}
+.cv{background:var(--purple2);color:var(--purple);}
+.ca{background:var(--red2);color:var(--red);}
+.ce{background:var(--blue2);color:var(--blue);}
+.chart-wrap{padding:14px;}
+.live-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;font-family:var(--mono);color:var(--green);padding:3px 8px;border-radius:7px;background:var(--green2);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.4s ease-in-out infinite;}
+.empty-msg{padding:28px;text-align:center;color:var(--muted);font-size:12px;font-family:var(--mono);}
+.risk-entry{display:flex;align-items:center;gap:11px;padding:11px 15px;border-bottom:1px solid var(--border);}
+.risk-entry:last-child{border:none;}
+.risk-info{flex:1;}
+.risk-name{font-weight:700;font-size:13px;}
+.risk-meta{font-size:10px;color:var(--muted);font-family:var(--mono);}
+.risk-bw{width:80px;height:5px;background:var(--border);border-radius:3px;flex-shrink:0;}
+.risk-bf{height:100%;border-radius:3px;}
+.risk-score{font-family:var(--mono);font-weight:800;font-size:13px;width:34px;text-align:right;}
+.enroll-grid{padding:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;}
+.ef{display:flex;flex-direction:column;gap:4px;}
+.ef.full{grid-column:1/-1;}
+.ef label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.ef input,.ef select{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--navy3);color:var(--text);font-size:13px;outline:none;}
+.ef input:focus,.ef select:focus{border-color:var(--teal);}
+.ef select option{background:var(--navy3);}
+.enroll-actions{padding:0 16px 16px;display:flex;gap:9px;}
+#enroll-status{margin:0 16px 12px;padding:9px 13px;border-radius:7px;font-size:12px;font-weight:600;display:none;}
+.es-ok{background:var(--green2);color:var(--green);display:block!important;}
+.es-err{background:var(--red2);color:var(--red);display:block!important;}
+.sf2-ctrl{display:flex;gap:9px;flex-wrap:wrap;padding:13px 15px;border-bottom:1px solid var(--border);}
+.sf2-ctrl select{padding:8px 11px;border:1px solid var(--border);border-radius:7px;font-size:12px;background:var(--navy2);color:var(--text);outline:none;font-family:var(--mono);}
+.sf2-ctrl select option{background:var(--navy2);}
+#sf2-prev{padding:18px;color:#000;background:#fff;font-family:'Times New Roman',serif;font-size:11px;min-height:280px;}
+#sf2-prev.loading{display:flex;align-items:center;justify-content:center;color:#666;font-family:sans-serif;background:var(--navy2);min-height:200px;}
+.sf2-h{text-align:center;margin-bottom:10px;}
+.sf2-h h1{font-size:13px;font-weight:bold;margin:4px 0;}
+.sf2-meta{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #000;margin-bottom:6px;}
+.sf2-mc{padding:4px 7px;border-right:1px solid #000;font-size:10px;}
+.sf2-mc:last-child{border:none;}
+.sf2-ml{font-weight:bold;font-size:9px;display:block;}
+.sf2-mv{border-bottom:1px solid #000;min-height:15px;}
+.sf2-tbl{width:100%;border-collapse:collapse;font-size:9px;}
+.sf2-tbl th,.sf2-tbl td{border:1px solid #000;padding:2px 3px;text-align:center;}
+.sf2-tbl th{background:#e8e8e8;font-size:8px;font-weight:bold;}
+.sf2-sig{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px;}
+.sf2-sig .ss{text-align:center;}
+.sf2-sig .sl{border-bottom:1px solid #000;min-height:24px;margin-bottom:3px;}
+.sf2-sig .sn{font-weight:bold;font-size:10px;}
+.sf2-sig .st{font-size:9px;}
+.tabs{display:flex;border-bottom:1px solid var(--border);padding:0 15px;background:rgba(0,0,0,.2);}
+.tab{padding:10px 14px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.tab.active{color:var(--teal);border-bottom-color:var(--teal);}
+@media print{
+  .sidebar,.topbar,.filter-bar,#login-screen,.topbar-r,.tabs,.sf2-ctrl .btn{display:none!important;}
+  .main{margin:0;}
+  body{background:#fff;color:#000;}
+  #sf2-prev{padding:0;background:#fff;}
+  .page{display:block!important;}
+  #page-sf2,#page-summary{display:block!important;}
+  @page{size:A4 landscape;margin:10mm;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">🎓</div>
+    <h2>Project LEAD</h2>
+    <div class="sub">JALIOBONG NHS · SECURE ACCESS</div>
+    <div class="login-err" id="login-err"></div>
+    <div class="lf"><label>Username</label><input type="text" id="login-u" placeholder="principal / admin / adviser1" onkeydown="if(event.key==='Enter')document.getElementById('login-p').focus()"></div>
+    <div class="lf"><label>Password</label><input type="password" id="login-p" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="role-pills"><span class="rp">👑 Principal</span><span class="rp">🔧 Admin</span><span class="rp">📚 Adviser</span></div>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div class="shell" id="app" style="display:none">
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-icon">🎓</div>
+    <div><div class="sb-name">Project LEAD</div><div class="sb-sub">v2.1 SMART ATTENDANCE</div></div>
+  </div>
+  <div class="sb-user">
+    <div class="ua" id="ua">👑</div>
+    <div><div class="un" id="un">—</div><div class="ur" id="ur">—</div></div>
+    <span class="logout" onclick="doLogout()" title="Logout">⏻</span>
+  </div>
+  <nav>
+    <div class="ng">Overview</div>
+    <div class="ni active" onclick="showPage('dashboard')" id="nav-dashboard">📊 Executive Dashboard</div>
+    <div class="ni" onclick="showPage('heatmap')" id="nav-heatmap">🌡️ Heatmap</div>
+    <div class="ng">Enrollment</div>
+    <div class="ni" onclick="showPage('enroll')" id="nav-enroll">➕ Enroll Learner</div>
+    <div class="ng">Reports</div>
+    <div class="ni" onclick="showPage('sf2')" id="nav-sf2">📋 SF2 Report</div>
+    <div class="ni" onclick="showPage('summary')" id="nav-summary">📑 Monthly Summary</div>
+    <div class="ng">AI Intelligence</div>
+    <div class="ni" onclick="showPage('risk')" id="nav-risk">🤖 AI Risk <span class="nbadge" id="risk-bdg">0</span></div>
+    <div class="ng">Tools</div>
+    <div class="ni" onclick="openScanner()">📷 Open Scanner</div>
+    <div class="ni" onclick="window.print()">🖨️ Print Report</div>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-clock" id="sb-clk">--:--:--</div>
+    <div class="sb-date" id="sb-dt">Loading…</div>
+    <div class="sb-sync" id="sb-sync">Auto-refresh: 30s</div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div><h2 id="page-title">📊 Executive Dashboard</h2><p id="page-sub">Real-time attendance intelligence · Jaliobong NHS</p></div>
+    <div class="topbar-r">
+      <span class="live-badge"><span class="ldot"></span>LIVE</span>
+      <button class="btn btn-ghost btn-sm" onclick="loadAll()">🔄 Refresh</button>
+      <button class="btn btn-teal btn-sm" onclick="showPage('sf2')">🖨️ SF2</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="filter-bar">
+      <select id="f-grade" onchange="applyF()"><option value="all">All Grades</option><option value="7">Grade 7</option><option value="8">Grade 8</option><option value="9">Grade 9</option><option value="10">Grade 10</option><option value="11">Grade 11</option><option value="12">Grade 12</option></select>
+      <select id="f-section" onchange="applyF()"><option value="all">All Sections</option></select>
+      <input type="date" id="f-date">
+      <button class="btn btn-ghost btn-sm" onclick="clearF()">✕ Clear</button>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats">
+        <div class="stat s-total" data-icon="👥"><div class="num" id="st-tot">—</div><div class="lbl">Total Scanned</div><div class="bar"><div class="bf" id="bf-tot" style="width:100%"></div></div></div>
+        <div class="stat s-present" data-icon="✅"><div class="num" id="st-pre">—</div><div class="lbl">Present</div><div class="bar"><div class="bf" id="bf-pre"></div></div></div>
+        <div class="stat s-late" data-icon="⏰"><div class="num" id="st-lat">—</div><div class="lbl">Late</div><div class="bar"><div class="bf" id="bf-lat"></div></div></div>
+        <div class="stat s-vlate" data-icon="⚠️"><div class="num" id="st-vl">—</div><div class="lbl">Very Late</div><div class="bar"><div class="bf" id="bf-vl"></div></div></div>
+        <div class="stat s-absent" data-icon="❌"><div class="num" id="st-abs">—</div><div class="lbl">Absent</div><div class="bar"><div class="bf" id="bf-abs"></div></div></div>
+        <div class="stat s-rate" data-icon="📊"><div class="num" id="st-rate">—%</div><div class="lbl">Rate</div><div class="bar"><div class="bf" id="bf-rate"></div></div></div>
+      </div>
+      <div class="grid2">
+        <div class="card"><div class="ch">📚 By Grade Level <span class="ctag">TODAY</span></div><div class="tbl-wrap"><table><thead><tr><th>Grade</th><th>Present</th><th>Late</th><th>Absent</th><th>Rate</th></tr></thead><tbody id="grade-tbody"></tbody></table></div></div>
+        <div class="card"><div class="ch">👩‍🏫 By Adviser <span class="ctag">TODAY</span></div><div class="tbl-wrap" style="max-height:280px;overflow-y:auto"><table><thead><tr><th>Adviser</th><th>Section</th><th>Present</th><th>Rate</th></tr></thead><tbody id="adv-tbody"></tbody></table></div></div>
+      </div>
+      <div class="card"><div class="ch">📈 7-Day Attendance Trend</div><div class="chart-wrap" id="trend-chart"></div></div>
+      <div class="card">
+        <div class="ch">🕐 4-Session Summary <span class="ctag">TODAY</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;padding:14px" id="session-grid"></div>
+      </div>
+      <div class="card"><div class="ch">🕐 Recent Scans <button class="btn btn-ghost btn-sm" onclick="loadLog()">↻</button></div><div class="tbl-wrap" style="max-height:320px;overflow-y:auto"><table><thead><tr><th>Name</th><th>Section</th><th>Session</th><th>Status</th><th>Time</th></tr></thead><tbody id="log-tbody"></tbody></table></div></div>
+    </div>
+
+    <!-- HEATMAP -->
+    <div class="page" id="page-heatmap">
+      <div class="card"><div class="ch">🌡️ Section Attendance Heatmap</div><div class="heatmap" id="heatmap-grid"></div></div>
+    </div>
+
+    <!-- ENROLL -->
+    <div class="page" id="page-enroll">
+      <div class="card">
+        <div class="ch">➕ Enroll New Learner</div>
+        <div id="enroll-status"></div>
+        <div class="enroll-grid">
+          <div class="ef"><label>Student ID *</label><input id="en-id" placeholder="2026-0001"></div>
+          <div class="ef"><label>LRN</label><input id="en-lrn" placeholder="12-digit LRN"></div>
+          <div class="ef"><label>Sex</label><select id="en-sex"><option value="">—</option><option>Male</option><option>Female</option></select></div>
+          <div class="ef"><label>Last Name *</label><input id="en-last" placeholder="Dela Cruz"></div>
+          <div class="ef"><label>First Name *</label><input id="en-first" placeholder="Juan"></div>
+          <div class="ef"><label>Middle Name</label><input id="en-mid" placeholder="Santos"></div>
+          <div class="ef"><label>Grade *</label><select id="en-grade"><option value="">—</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div>
+          <div class="ef"><label>Section *</label><input id="en-sec" placeholder="e.g. Mendel"></div>
+          <div class="ef"><label>Parent Mobile *</label><input id="en-phone" placeholder="09171234567"></div>
+          <div class="ef full"><label>Parent / Guardian Name</label><input id="en-pname" placeholder="Maria Dela Cruz"></div>
+          <div class="ef"><label>Parent Messenger PSID</label><input id="en-psid" placeholder="From webhook (optional)"></div>
+          <div class="ef full"><label>Adviser Email</label><input id="en-adv" type="email" placeholder="adviser@deped.gov.ph"></div>
+        </div>
+        <div class="enroll-actions">
+          <button class="btn btn-teal" onclick="submitEnroll()">💾 Save & Generate QR</button>
+          <button class="btn btn-ghost" onclick="clearEnroll()">✕ Clear</button>
+        </div>
+      </div>
+      <div class="card" id="qr-result" style="display:none">
+        <div class="ch">🔲 Generated QR Code</div>
+        <div style="padding:18px;text-align:center"><img id="qr-img" style="background:#fff;padding:10px;border-radius:8px;max-width:220px"></div>
+      </div>
+    </div>
+
+    <!-- SF2 -->
+    <div class="page" id="page-sf2">
+      <div class="card">
+        <div class="ch">📋 SF2 — Learner's Attendance Report</div>
+        <div class="sf2-ctrl">
+          <select id="sf2-sec"><option value="">— Select Section —</option></select>
+          <select id="sf2-mo"><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option></select>
+          <select id="sf2-yr"><option value="2025">2025</option><option value="2026">2026</option></select>
+          <button class="btn btn-teal btn-sm" onclick="makeSF2()">📋 Generate</button>
+          <button class="btn btn-ghost btn-sm" onclick="printSF2()">🖨️ Print PDF</button>
+        </div>
+        <div id="sf2-prev" class="loading">Select section and month → Generate.</div>
+      </div>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="page" id="page-summary">
+      <div class="card">
+        <div class="ch">📑 Monthly Summary
+          <div style="display:flex;gap:8px">
+            <select id="sum-mo" onchange="makeSummary()" style="padding:6px 10px;border:1px solid var(--border);border-radius:7px;font-size:12px;background:var(--navy2);color:var(--text);outline:none"><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option></select>
+            <button class="btn btn-ghost btn-sm" onclick="window.print()">🖨️</button>
+          </div>
+        </div>
+        <div class="tbl-wrap"><table><thead><tr><th>Section</th><th>Grade</th><th>Adviser</th><th>Enrolled</th><th>Present</th><th>Late</th><th>V.Late</th><th>Absent</th><th>Rate</th></tr></thead><tbody id="sum-tbody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- RISK -->
+    <div class="page" id="page-risk">
+      <div class="card"><div class="ch">🤖 AI Dropout Risk Monitor <span class="ctag" id="risk-tag">0 FLAGGED</span></div><div id="risk-list"></div></div>
+    </div>
+
+  </div>
+</div>
+</div><!-- /shell -->
+
+<script>
+// ════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════
+const CFG = {
+  URL: "https://script.google.com/macros/s/AKfycbxZ10qAp7kkBaYoAJXA301wbH-rJ6fT4HJ0i3hMd9ai_tiuP5UCPoxZxa7xDruX15-t/exec",
+  REFRESH: 30000
+};
+
+const MONTHS = ["","January","February","March","April","May","June","July","August","September","October","November","December"];
+const IS_GAS = typeof google !== "undefined" && !!google.script;
+
+// ── State
+let session = null;
+let dashData = { totals:{}, gradeLevel:[], advisers:[], sections:[], sessionSummary:{}, weeklyTrend:{days:[],present:[],absent:[],late:[]} };
+let logData  = [];
+let riskData = [];
+let curSec   = "all";
+let excFilter = "pending";
+
+// ── Clock
+function tick(){
+  const n=new Date();
+  document.getElementById("sb-clk").textContent=n.toLocaleTimeString("en-PH",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:true});
+  document.getElementById("sb-dt").textContent=n.toLocaleDateString("en-PH",{weekday:"long",month:"short",day:"numeric",year:"numeric"});
+}
+tick(); setInterval(tick,1000);
+
+// ════════════════════════════════════
+// AUTH — works for BOTH Apps Script and GitHub Pages
+// ════════════════════════════════════
+async function sha256client(str){
+  const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+
+async function doLogin(){
+  const user = document.getElementById("login-u").value.trim();
+  const pass = document.getElementById("login-p").value;
+  const errEl = document.getElementById("login-err");
+  const btn   = document.getElementById("login-btn");
+
+  errEl.className = "login-err";
+  if(!user||!pass){ errEl.textContent="⚠️ Enter username and password."; errEl.className="login-err show"; return; }
+
+  btn.disabled=true; btn.textContent="Signing in…";
+
+  // Pre-hash so password never travels in plain text
+  const hashed = await sha256client(pass);
+
+  if(IS_GAS){
+    // Inside Apps Script modal — use google.script.run
+    google.script.run
+      .withSuccessHandler(r=>{ btn.disabled=false; btn.textContent="Sign In"; if(r.success){session=r;sessionStorage.setItem("ls",JSON.stringify(r));enterApp();}else{errEl.textContent="❌ "+r.message;errEl.className="login-err show";}})
+      .withFailureHandler(e=>{ btn.disabled=false; btn.textContent="Sign In"; errEl.textContent="❌ "+e.message; errEl.className="login-err show";})
+      .loginUser(user, hashed);
+  } else {
+    // GitHub Pages — fetch
+    try{
+      const url = `${CFG.URL}?action=login&u=${encodeURIComponent(user)}&pw=${encodeURIComponent(hashed)}`;
+      const res  = await fetch(url,{method:"GET",redirect:"follow"});
+      if(!res.ok) throw new Error("HTTP "+res.status);
+      const json = await res.json();
+      const r    = json.data || json;
+      btn.disabled=false; btn.textContent="Sign In";
+      if(r.success){ session=r; sessionStorage.setItem("ls",JSON.stringify(r)); enterApp(); }
+      else{ errEl.textContent="❌ "+(r.message||"Login failed."); errEl.className="login-err show"; }
+    }catch(e){
+      btn.disabled=false; btn.textContent="Sign In";
+      errEl.textContent="❌ Connection error: "+e.message+"\n\n→ Check Apps Script URL in CFG.URL\n→ Must be deployed as 'Anyone' access\n→ Create a NEW deployment after code changes";
+      errEl.className="login-err show";
+    }
+  }
+}
+
+function doLogout(){
+  sessionStorage.removeItem("ls"); session=null;
+  document.getElementById("login-screen").style.display="flex";
+  document.getElementById("app").style.display="none";
+}
+
+function enterApp(){
+  document.getElementById("login-screen").style.display="none";
+  document.getElementById("app").style.display="flex";
+  const m={principal:["👑","ua-p"],admin:["🔧","ua-a"],adviser:["📚","ua-v"]};
+  const[ic,cl]=m[session.role]||["👤",""];
+  document.getElementById("ua").textContent=ic;
+  document.getElementById("ua").className="ua "+cl;
+  document.getElementById("un").textContent=session.fullName||"User";
+  document.getElementById("ur").textContent=(session.role||"").toUpperCase()+" ACCESS";
+
+  // Adviser: lock to their section
+  if(session.role==="adviser"&&session.section){
+    curSec=session.section;
+    document.getElementById("f-section").value=session.section;
+    document.getElementById("f-section").disabled=true;
+    document.getElementById("f-grade").disabled=true;
+  }
+
+  // Init
+  document.getElementById("f-date").value=new Date().toISOString().slice(0,10);
+  document.getElementById("sf2-yr").value=new Date().getFullYear();
+  const m2=new Date().getMonth()+1;
+  document.getElementById("sf2-mo").value=m2;
+  document.getElementById("sum-mo").value=m2;
+
+  loadAll();
+  setInterval(loadAll,CFG.REFRESH);
+}
+
+// Restore session on reload
+(function(){ const s=sessionStorage.getItem("ls"); if(s){ session=JSON.parse(s); enterApp(); }})();
+
+// ════════════════════════════════════
+// DATA
+// ════════════════════════════════════
+async function apiFetch(action){
+  if(IS_GAS){
+    return new Promise((res,rej)=>{
+      const fnMap={dashboard:"getFullDashboardData",log:"getTodayAttendanceList",risk:"getAIRiskReport"};
+      const fn=fnMap[action];
+      if(!fn){res({});return;}
+      google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn]();
+    });
+  }
+  const r=await fetch(`${CFG.URL}?action=${action}`,{redirect:"follow"});
+  const j=await r.json();
+  return j.data||j;
+}
+
+async function loadAll(){
+  try{
+    [dashData,logData,riskData]=await Promise.all([apiFetch("dashboard"),apiFetch("log"),apiFetch("risk")]);
+    // Populate section dropdowns
+    const secs=(dashData.sections||[]).map(s=>s.section);
+    ["f-section","sf2-sec"].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el.options.length<=1&&secs.length){
+        secs.forEach(s=>{const o=new Option(s,s);el.add(o);});
+      }
+    });
+    if(riskData&&riskData.profiles) document.getElementById("risk-bdg").textContent=riskData.profiles.filter(r=>r.ratio>=45).length;
+    renderStats(); renderGrade(); renderAdviser(); renderTrend(); renderSessions(); renderLog(); renderHeatmap();
+    document.getElementById("sb-sync").textContent="Last sync: "+new Date().toLocaleTimeString("en-PH",{hour:"2-digit",minute:"2-digit"});
+  }catch(e){ console.error("loadAll:",e); }
+}
+
+function applyF(){ curSec=document.getElementById("f-section").value; loadAll(); }
+function clearF(){
+  if(session?.role!=="adviser"){ document.getElementById("f-section").value="all"; document.getElementById("f-grade").value="all"; curSec="all"; }
+  document.getElementById("f-date").value=new Date().toISOString().slice(0,10);
+  loadAll();
+}
+
+// ════════════════════════════════════
+// RENDER FUNCTIONS
+// ════════════════════════════════════
+function renderStats(){
+  const t=dashData.totals||{};
+  const p=t.present||0,l=t.late||0,vl=t.veryLate||0,a=t.absent||0;
+  const tot=p+l+vl+a,rate=tot?Math.round((p+l)/tot*100):0;
+  document.getElementById("st-tot").textContent=tot;
+  document.getElementById("st-pre").textContent=p;
+  document.getElementById("st-lat").textContent=l;
+  document.getElementById("st-vl").textContent=vl;
+  document.getElementById("st-abs").textContent=a;
+  document.getElementById("st-rate").textContent=rate+"%";
+  const bfills={tot:100,pre:tot?p/tot*100:0,lat:tot?l/tot*100:0,vl:tot?vl/tot*100:0,abs:tot?a/tot*100:0,rate};
+  Object.entries(bfills).forEach(([k,v])=>{const el=document.getElementById("bf-"+k);if(el)el.style.width=Math.min(v,100)+"%";});
+}
+
+function renderGrade(){
+  const rows=(dashData.gradeLevel||[]).filter(g=>curSec==="all"||true).map(g=>{
+    const tot=(g.present||0)+(g.late||0)+(g.veryLate||0)+(g.absent||0);
+    const rate=tot?Math.round(((g.present||0)+(g.late||0))/tot*100):0;
+    const rc=rate>=90?"var(--green)":rate>=75?"var(--amber)":"var(--red)";
+    return`<tr><td><strong>Grade ${g.grade}</strong></td><td style="color:var(--green);font-weight:700">${g.present||0}</td><td style="color:var(--amber)">${g.late||0}</td><td style="color:var(--red)">${g.absent||0}</td><td><strong style="color:${rc};font-family:var(--mono)">${rate}%</strong></td></tr>`;
+  });
+  document.getElementById("grade-tbody").innerHTML=rows.join("")||`<tr><td colspan="5" class="empty-msg">No data today</td></tr>`;
+}
+
+function renderAdviser(){
+  const rows=(dashData.advisers||[]).filter(a=>curSec==="all"||a.section===curSec).map(a=>{
+    const tot=(a.present||0)+(a.late||0)+(a.veryLate||0)+(a.absent||0);
+    const rate=tot?Math.round(((a.present||0)+(a.late||0))/tot*100):0;
+    const rc=rate>=90?"var(--green)":rate>=75?"var(--amber)":"var(--red)";
+    return`<tr><td><strong>${a.adviser}</strong></td><td style="font-family:var(--mono);font-size:11px">${a.section}</td><td style="color:var(--green);font-weight:700">${a.present||0}</td><td><strong style="color:${rc};font-family:var(--mono)">${rate}%</strong></td></tr>`;
+  });
+  document.getElementById("adv-tbody").innerHTML=rows.join("")||`<tr><td colspan="4" class="empty-msg">No advisers found</td></tr>`;
+}
+
+function renderTrend(){
+  const t=dashData.weeklyTrend||{days:[],present:[],absent:[],late:[]};
+  if(!t.days.length){document.getElementById("trend-chart").innerHTML=`<div class="empty-msg">No trend data yet</div>`;return;}
+  const W=660,H=160,pL=40,pB=26,pT=12,pR=12;
+  const iW=W-pL-pR,iH=H-pB-pT;
+  const mx=Math.max(1,...t.present,...t.absent,...t.late)*1.15;
+  const gp=t.days.length>1?iW/(t.days.length-1):0;
+  function poly(arr,c){
+    const p=arr.map((v,i)=>`${pL+i*gp},${pT+iH-(v/mx)*iH}`);
+    return`<polygon points="${p.join(" ")} ${pL+gp*(arr.length-1)},${pT+iH} ${pL},${pT+iH}" fill="${c}" opacity=".1"/>
+    <polyline points="${p.join(" ")}" fill="none" stroke="${c}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  }
+  let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:160px">`;
+  for(let i=0;i<=4;i++){const y=pT+(iH/4)*i;svg+=`<line x1="${pL}" y1="${y}" x2="${W-pR}" y2="${y}" stroke="rgba(255,255,255,.06)"/><text x="${pL-5}" y="${y+4}" text-anchor="end" font-size="9" fill="#94a3b8">${Math.round(mx-mx/4*i)}</text>`;}
+  svg+=poly(t.present,"#10b981")+poly(t.late,"#f59e0b")+poly(t.absent,"#ef4444");
+  t.days.forEach((d,i)=>{const x=pL+i*gp,yp=pT+iH-(t.present[i]/mx)*iH,ya=pT+iH-(t.absent[i]/mx)*iH;svg+=`<circle cx="${x}" cy="${yp}" r="3.5" fill="#10b981"/><circle cx="${x}" cy="${ya}" r="3.5" fill="#ef4444"/><text x="${x}" y="${H-4}" text-anchor="middle" font-size="9" fill="#94a3b8">${d}</text>`;});
+  svg+=`</svg><div style="display:flex;gap:14px;padding:2px 4px;font-size:11px;font-family:var(--mono)">
+    <span style="color:var(--green)">▬ Present</span><span style="color:var(--amber)">▬ Late</span><span style="color:var(--red)">▬ Absent</span></div>`;
+  document.getElementById("trend-chart").innerHTML=svg;
+}
+
+function renderSessions(){
+  const s=dashData.sessionSummary||{};
+  const cards=[{k:"AM-IN",l:"AM Time-In",i:"🌅",t:"5:00–8:30 AM"},{k:"AM-OUT",l:"AM Time-Out",i:"☀️",t:"11:00 AM–12:30 PM"},{k:"PM-IN",l:"PM Time-In",i:"🌤",t:"12:00–1:30 PM"},{k:"PM-OUT",l:"PM Time-Out",i:"🌆",t:"4:00–5:30 PM"}];
+  document.getElementById("session-grid").innerHTML=cards.map(c=>{
+    const cnt=s[c.k]||0;
+    return`<div style="background:var(--navy3);border:1px solid var(--border);border-radius:9px;padding:12px;text-align:center">
+      <div style="font-size:22px;margin-bottom:5px">${c.i}</div>
+      <div style="font-size:11px;font-weight:700">${c.l}</div>
+      <div style="font-size:9px;color:var(--muted);font-family:var(--mono);margin:4px 0 8px">${c.t}</div>
+      <div style="font-size:26px;font-weight:900;color:var(--teal);font-family:var(--mono)">${cnt}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderLog(){
+  const pm={"Present":"cp","Late":"cl","Very Late":"cv","Absent":"ca","Campus Exit":"ce","PM PRESENT":"cp","LATE PM RETURN":"cl","EARLY OUT":"cl","EARLY DISMISSAL":"cl"};
+  const rows=(Array.isArray(logData)?logData:[]).filter(r=>curSec==="all"||r.section===curSec);
+  document.getElementById("log-tbody").innerHTML=rows.map(r=>`<tr>
+    <td><strong>${r.name}</strong></td>
+    <td style="font-family:var(--mono);font-size:11px">${r.section}</td>
+    <td style="font-family:var(--mono);font-size:11px;color:var(--teal)">${r.slot||r.mode||"—"}</td>
+    <td><span class="chip ${pm[r.status]||"cp"}">${r.status}</span></td>
+    <td style="font-family:var(--mono);font-size:11px;color:var(--muted)">${r.time}</td>
+  </tr>`).join("")||`<tr><td colspan="5" class="empty-msg">No scans today</td></tr>`;
+}
+
+function renderHeatmap(){
+  const advMap={};(dashData.advisers||[]).forEach(a=>advMap[a.section]=a);
+  document.getElementById("heatmap-grid").innerHTML=(dashData.sections||[])
+    .filter(s=>curSec==="all"||s.section===curSec)
+    .map(sec=>{
+      const a=advMap[sec.section]||{};
+      const tot=(a.present||0)+(a.late||0)+(a.veryLate||0)+(a.absent||0);
+      const rate=tot?Math.round((a.present||0)/tot*100):0;
+      const cls=rate>=90?"hh":rate>=75?"hm":"hl";
+      return`<div class="hc ${cls}" title="${sec.adviser}"><div class="hs">${sec.section}</div><div class="hr">${rate}%</div><div class="hcnt">${a.present||0}/${tot||sec.enrolled}</div></div>`;
+    }).join("")||`<div class="empty-msg">No sections found</div>`;
+}
+
+function renderRisk(){
+  const profiles=riskData?.profiles||[];
+  const flagged=profiles.filter(r=>r.ratio>=45).length;
+  document.getElementById("risk-bdg").textContent=flagged;
+  document.getElementById("risk-tag").textContent=flagged+" FLAGGED";
+  const lvl=r=>r.ratio>=60?"CRITICAL":r.ratio>=45?"HIGH":r.ratio>=30?"MEDIUM":"LOW";
+  const lc={"CRITICAL":"ca","HIGH":"ca","MEDIUM":"cl","LOW":"cp"};
+  const bc={"CRITICAL":"#ef4444","HIGH":"#f87171","MEDIUM":"#f59e0b","LOW":"#10b981"};
+  document.getElementById("risk-list").innerHTML=profiles.map(r=>`
+    <div class="risk-entry">
+      <div style="font-size:28px">⚠️</div>
+      <div class="risk-info"><div class="risk-name">${r.name}</div><div class="risk-meta">${r.section||"—"} · ${r.absences} abs · ${r.lates} lates · ${r.ratio}% ratio</div></div>
+      <div class="risk-bw"><div class="risk-bf" style="width:${r.ratio}%;background:${bc[lvl(r)]}"></div></div>
+      <div class="risk-score" style="color:${bc[lvl(r)]}">${r.ratio}</div>
+      <span class="chip ${lc[lvl(r)]}">${lvl(r)}</span>
+    </div>`).join("")||`<div class="empty-msg">✅ No high-risk students detected</div>`;
+}
+
+// ════════════════════════════════════
+// PAGE NAV
+// ════════════════════════════════════
+const PM={
+  dashboard:{t:"📊 Executive Dashboard",s:"Real-time attendance intelligence"},
+  heatmap:{t:"🌡️ Heatmap",s:"Section attendance visualization"},
+  enroll:{t:"➕ Enroll Learner",s:"Register a new student"},
+  sf2:{t:"📋 SF2 Report",s:"DepEd School Form 2"},
+  summary:{t:"📑 Monthly Summary",s:"Attendance by section"},
+  risk:{t:"🤖 AI Risk Monitor",s:"Early dropout detection"},
+};
+function showPage(p){
+  document.querySelectorAll(".page").forEach(e=>e.classList.remove("active"));
+  document.querySelectorAll(".ni").forEach(e=>e.classList.remove("active"));
+  document.getElementById("page-"+p).classList.add("active");
+  const n=document.getElementById("nav-"+p); if(n)n.classList.add("active");
+  document.getElementById("page-title").textContent=PM[p]?.t||p;
+  document.getElementById("page-sub").textContent=PM[p]?.s||"";
+  if(p==="risk")renderRisk();
+  if(p==="summary")makeSummary();
+  if(p==="heatmap")renderHeatmap();
+}
+
+// ════════════════════════════════════
+// ENROLLMENT
+// ════════════════════════════════════
+function clearEnroll(){
+  ["en-id","en-lrn","en-last","en-first","en-mid","en-sec","en-phone","en-pname","en-psid","en-adv"].forEach(i=>document.getElementById(i).value="");
+  document.getElementById("en-sex").value=""; document.getElementById("en-grade").value="";
+}
+
+async function submitEnroll(){
+  const data={
+    id:document.getElementById("en-id").value.trim(),
+    lrn:document.getElementById("en-lrn").value.trim(),
+    sex:document.getElementById("en-sex").value,
+    lastName:document.getElementById("en-last").value.trim(),
+    firstName:document.getElementById("en-first").value.trim(),
+    middleName:document.getElementById("en-mid").value.trim(),
+    grade:document.getElementById("en-grade").value,
+    section:document.getElementById("en-sec").value.trim(),
+    parentPhone:document.getElementById("en-phone").value.trim(),
+    parentName:document.getElementById("en-pname").value.trim(),
+    parentPsid:document.getElementById("en-psid").value.trim(),
+    adviserEmail:document.getElementById("en-adv").value.trim()
+  };
+  if(!data.id||!data.lastName||!data.firstName||!data.grade||!data.section){
+    showES("⚠️ Fill in required fields (*)",false); return;
+  }
+  showES("⏳ Saving…",true);
+  try{
+    if(IS_GAS){
+      google.script.run
+        .withSuccessHandler(r=>{ if(r.success){showES("✅ Enrolled!",true);document.getElementById("qr-result").style.display="block";document.getElementById("qr-img").src=r.qrUrl;clearEnroll();}else{showES("❌ "+r.message,false);}})
+        .withFailureHandler(e=>showES("❌ "+e.message,false))
+        .enrollStudent(data);
+    } else {
+      const r=await fetch(CFG.URL,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"enroll",data}),redirect:"follow"});
+      const j=await r.json();
+      const res=j.data||j;
+      if(res.success){showES("✅ Enrolled!",true);document.getElementById("qr-result").style.display="block";document.getElementById("qr-img").src=res.qrUrl;clearEnroll();}
+      else showES("❌ "+(res.message||"Failed"),false);
+    }
+  }catch(e){showES("❌ "+e.message,false);}
+}
+function showES(msg,ok){const el=document.getElementById("enroll-status");el.textContent=msg;el.className=ok?"es-ok":"es-err";}
+
+// ════════════════════════════════════
+// SF2
+// ════════════════════════════════════
+function makeSF2(){
+  const sec=document.getElementById("sf2-sec").value;
+  const mo=parseInt(document.getElementById("sf2-mo").value);
+  const yr=parseInt(document.getElementById("sf2-yr").value);
+  if(!sec){alert("Select a section first.");return;}
+  const p=document.getElementById("sf2-prev");
+  p.className="loading";p.textContent="⏳ Generating…";
+  setTimeout(()=>buildSF2(sec,mo,yr),400);
+}
+
+function buildSF2(sec,mo,yr){
+  const info=(dashData.sections||[]).find(s=>s.section===sec)||{};
+  const dim=new Date(yr,mo,0).getDate();
+  const DOW=["Su","Mo","Tu","We","Th","Fr","Sa"];
+  const sDays=[];
+  for(let d=1;d<=dim;d++){const wd=new Date(yr,mo-1,d).getDay();if(wd>=1&&wd<=5)sDays.push(d);}
+  const dHdr=sDays.map(d=>`<th style="min-width:18px;font-size:7px;padding:1px">${d}<br>${DOW[new Date(yr,mo-1,d).getDay()]}</th>`).join("");
+  document.getElementById("sf2-prev").className="";
+  document.getElementById("sf2-prev").innerHTML=`
+  <div style="max-width:100%">
+    <div class="sf2-h"><div style="font-size:10px;font-weight:bold">Republic of the Philippines · Department of Education</div>
+    <h1>School Form 2 (SF2) — Learner's Attendance Report</h1><div style="font-size:10px;font-style:italic">For ${MONTHS[mo]} ${yr}</div></div>
+    <div class="sf2-meta">
+      <div class="sf2-mc"><span class="sf2-ml">School Name:</span><div class="sf2-mv">Jaliobong National High School</div></div>
+      <div class="sf2-mc"><span class="sf2-ml">Grade & Section:</span><div class="sf2-mv">${sec}</div></div>
+      <div class="sf2-mc"><span class="sf2-ml">Class Adviser:</span><div class="sf2-mv">${info.adviser||"___________"}</div></div>
+      <div class="sf2-mc"><span class="sf2-ml">School ID:</span><div class="sf2-mv">____________</div></div>
+      <div class="sf2-mc"><span class="sf2-ml">School Year:</span><div class="sf2-mv">${yr}–${yr+1}</div></div>
+      <div class="sf2-mc"><span class="sf2-ml">Month:</span><div class="sf2-mv">${MONTHS[mo]} ${yr}</div></div>
+    </div>
+    <table class="sf2-tbl">
+      <thead><tr><th rowspan="2" style="width:20px">No.</th><th rowspan="2" style="text-align:left;width:140px">Learner's Name</th>${dHdr}<th rowspan="2" style="width:26px">Present</th><th rowspan="2" style="width:26px">Absent</th></tr><tr></tr></thead>
+      <tbody><tr><td colspan="${sDays.length+4}" style="padding:14px;text-align:center;color:#888">Connect to Attendance_Analytics_Log for real student data.</td></tr></tbody>
+    </table>
+    <div class="sf2-sig">
+      <div class="ss"><div class="sl"></div><div class="sn">${info.adviser||"____________________"}</div><div class="st">Class Adviser</div></div>
+      <div class="ss"><div class="sl"></div><div class="sn">____________________</div><div class="st">Master Teacher / Dept. Head</div></div>
+      <div class="ss"><div class="sl"></div><div class="sn">____________________</div><div class="st">School Principal</div></div>
+    </div>
+    <div style="margin-top:8px;font-size:8px;color:#888;text-align:right">Project LEAD · ${new Date().toLocaleDateString("en-PH")}</div>
+  </div>`;
+}
+function printSF2(){if(document.getElementById("sf2-prev").classList.contains("loading")){alert("Generate SF2 first.");return;}window.print();}
+
+// ════════════════════════════════════
+// SUMMARY
+// ════════════════════════════════════
+function makeSummary(){
+  const mo=parseInt(document.getElementById("sum-mo").value);
+  let tp=0,tl=0,tvl=0,ta=0,te=0;
+  const advMap={};(dashData.advisers||[]).forEach(a=>advMap[a.section]=a);
+  const rows=(dashData.sections||[]).filter(s=>curSec==="all"||s.section===curSec).map(sec=>{
+    const a=advMap[sec.section]||{};
+    const p=a.present||0,l=a.late||0,vl=a.veryLate||0,ab=a.absent||0;
+    const tot=p+l+vl+ab,rate=tot?Math.round((p+l)/tot*100):0;
+    const rc=rate>=90?"var(--green)":rate>=75?"var(--amber)":"var(--red)";
+    tp+=p;tl+=l;tvl+=vl;ta+=ab;te+=sec.enrolled||0;
+    return`<tr><td><strong>${sec.section}</strong></td><td>Grade ${sec.grade}</td><td style="font-size:12px">${sec.adviser||"—"}</td><td style="font-family:var(--mono)">${sec.enrolled||0}</td><td style="color:var(--green);font-weight:700">${p}</td><td style="color:var(--amber)">${l}</td><td style="color:var(--purple)">${vl}</td><td style="color:var(--red)">${ab}</td><td><strong style="color:${rc};font-family:var(--mono)">${rate}%</strong></td></tr>`;
+  });
+  const gt=tp+tl+tvl+ta,gr=gt?Math.round((tp+tl)/gt*100):0;
+  rows.push(`<tr style="background:var(--navy3);font-weight:800;border-top:2px solid var(--border)"><td colspan="3">GRAND TOTAL — ${MONTHS[mo]}</td><td style="font-family:var(--mono)">${te}</td><td style="color:var(--green)">${tp}</td><td style="color:var(--amber)">${tl}</td><td style="color:var(--purple)">${tvl}</td><td style="color:var(--red)">${ta}</td><td style="font-family:var(--mono);font-weight:800">${gr}%</td></tr>`);
+  document.getElementById("sum-tbody").innerHTML=rows.join("")||`<tr><td colspan="9" class="empty-msg">No sections enrolled</td></tr>`;
+}
+
+function openScanner(){
+  if(IS_GAS) google.script.run.openScannerUI();
+  else window.open("index.html","_blank");
+}
+function loadLog(){ renderLog(); }
+</script>
+</body>
+</html>
