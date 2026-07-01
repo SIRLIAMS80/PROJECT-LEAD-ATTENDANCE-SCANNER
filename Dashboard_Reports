@@ -499,7 +499,7 @@ action and returned "Unknown action: undefined".
 // ════════════════════════════════════════════════════════
 const CONFIG = {
   // ⚠️ UPDATE THIS URL every time you create a New Deployment
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbz2UQgtyVyyiF7BjBHQEU5n5KmSuZDoxjgTuwMX-yJox85WsnyR4sCsW98VC0n__ryC/exec",
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyUNYY8vYQ_mphHqNDOkmgk5oiuNgDLHz3uuv2csJq6ReAIRzAbtAzWyJC_Jxp7xwD1/exec",
   AUTO_REFRESH_MS: 30000
 };
 
